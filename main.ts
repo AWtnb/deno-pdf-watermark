@@ -139,7 +139,7 @@ const main = async () => {
   if (isNaN(Number(flags.start))) {
     console.log("invalid arg:", flags.start);
     Deno.exit(1);
-}
+  }
   const result = await overlay(
     flags.path,
     flags.text,
