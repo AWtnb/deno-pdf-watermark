@@ -16,9 +16,17 @@ const withSuffix = (path: string, suffix: string): string => {
   return parts.join(".") + suffix + "." + extension;
 };
 
+const getRoot = (): string => {
+  const p = Deno.execPath();
+  if (p.endsWith(join("deno", "current", "deno.exe"))) {
+    return Deno.cwd();
+  }
+  return dirname(p);
+};
+
 const getFonts = async (): Promise<string[]> => {
   const names: string[] = [];
-  const d = dirname(Deno.execPath());
+  const d = getRoot();
   for await (const dirEntry of Deno.readDir(d)) {
     const n = dirEntry.name;
     if (n.endsWith(".ttf")) {
@@ -40,6 +48,7 @@ interface TextPosition {
 }
 
 const getTextPosition = (page: PDFPage, em: number): TextPosition => {
+  const mbox = page.getMediaBox();
   const width = page.getWidth();
   const height = page.getHeight();
   let a = page.getRotation().angle;
@@ -49,28 +58,28 @@ const getTextPosition = (page: PDFPage, em: number): TextPosition => {
   const u = Math.round(a / 90);
   if (u == 1) {
     return {
-      x: width,
-      y: em,
+      x: mbox.x + width,
+      y: mbox.y + em,
       rotation: degrees(180),
     };
   }
   if (u == 2) {
     return {
-      x: width - em,
-      y: height,
+      x: mbox.x + width - em,
+      y: mbox.y + height,
       rotation: degrees(-90),
     };
   }
   if (u == 3) {
     return {
-      x: 0,
-      y: height - em,
+      x: mbox.x + 0,
+      y: mbox.y + height - em,
       rotation: degrees(0),
     };
   }
   return {
-    x: em,
-    y: 0,
+    x: mbox.x + em,
+    y: mbox.y + 0,
     rotation: degrees(90),
   };
 };
