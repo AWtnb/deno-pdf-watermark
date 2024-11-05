@@ -1,4 +1,4 @@
-import { basename } from "jsr:@std/path";
+import { basename, dirname, join } from "jsr:@std/path";
 import { sprintf } from "jsr:@std/fmt/printf";
 import { parseArgs } from "jsr:@std/cli/parse-args";
 import {
@@ -18,10 +18,11 @@ const withSuffix = (path: string, suffix: string): string => {
 
 const getFonts = async (): Promise<string[]> => {
   const names: string[] = [];
-  for await (const dirEntry of Deno.readDir(".")) {
+  const d = dirname(Deno.execPath());
+  for await (const dirEntry of Deno.readDir(d)) {
     const n = dirEntry.name;
     if (n.endsWith(".ttf")) {
-      names.push(n);
+      names.push(join(d, n));
     }
   }
   return names;
