@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "@std/path": "jsr:@std/path",
+    "@std/fmt/printf": "jsr:@std/fmt/printf",
+    "@std/cli/parse-args": "jsr:@std/cli/parse-args",
+    "pdf-lib": "https://cdn.skypack.dev/pdf-lib?dts",
+    "fontkit": "https://cdn.skypack.dev/@pdf-lib/fontkit?dts"
+  }
+}

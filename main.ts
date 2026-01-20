@@ -1,14 +1,9 @@
-import { basename, dirname, join } from "jsr:@std/path";
-import { sprintf } from "jsr:@std/fmt/printf";
-import { parseArgs } from "jsr:@std/cli/parse-args";
-import {
-  type Degrees,
-  degrees,
-  PDFDocument,
-  PDFPage,
-} from "https://cdn.skypack.dev/pdf-lib?dts";
+import { basename, dirname, join } from "@std/path";
+import { sprintf } from "@std/fmt/printf";
+import { parseArgs } from "@std/cli/parse-args";
+import { type Degrees, degrees, PDFDocument, PDFPage } from "pdf-lib";
 
-import fontkit from "https://cdn.skypack.dev/@pdf-lib/fontkit?dts";
+import fontkit from "fontkit";
 
 const withSuffix = (path: string, suffix: string): string => {
   const parts = path.split(".");
@@ -87,8 +82,7 @@ const getTextPosition = (page: PDFPage, em: number): TextPosition => {
 const overlay = async (
   path: string,
   text: string,
-  start: number,
-  nombre: boolean,
+  startNombre: string,
 ): Promise<OverlayResult> => {
   const fonts = await getFonts();
   if (fonts.length < 1) {
@@ -113,8 +107,8 @@ const overlay = async (
   );
 
   pages.forEach((page: PDFPage, idx: number) => {
-    const watermark = nombre
-      ? sprintf("%s(p.%03d)  ", text, start + idx)
+    const watermark = startNombre != ""
+      ? sprintf("%s(p.%03d)  ", text, Number(startNombre) + idx)
       : text + "  ";
     const added = outDoc.addPage(page);
 
@@ -137,26 +131,25 @@ const overlay = async (
 
 const main = async () => {
   const flags = parseArgs(Deno.args, {
-    string: ["path", "text", "start"],
-    boolean: ["nombre"],
+    string: ["path", "text", "startNombre"],
     default: {
       path: "",
       text: "",
-      start: "1",
-      nombre: false,
+      startNombre: "",
     },
   });
-  if (isNaN(Number(flags.start))) {
-    console.log("invalid arg:", flags.start);
+  if (flags.startNombre !== "" && isNaN(Number(flags.startNombre))) {
+    console.log("invalid arg:", flags.startNombre);
     Deno.exit(1);
   }
   const result = await overlay(
     flags.path,
     flags.text,
-    Number(flags.start),
-    flags.nombre,
+    flags.startNombre,
   );
-  console.log(result.Count);
+  if (flags.startNombre !== "") {
+    console.log(result.Count);
+  }
   Deno.exit(result.Returncode);
 };
 
